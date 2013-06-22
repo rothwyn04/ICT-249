@@ -1,0 +1,533 @@
+<!DOCTYPE HTML>
+<html>
+ <head>
+  <title>YTL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">   
+  
+  <link rel="stylesheet" href="jquery/jquery.mobile-1.3.1.min.css" />
+  <script type="text/javascript" charset="utf-8" src="jquery-1.8.3.min.js"></script>
+  <script type="text/javascript" charset="utf-8" src="jquery/jquery.mobile-1.3.1.js"></script>
+  
+  <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+  
+  <script type="text/javascript" >
+    $(function() {
+    
+      document.addEventListener("backbutton", function() {
+            if ( $('.ui-page-active').attr('id') == 'home') {
+                $("#exit_btn").trigger('click');
+            } else {
+                history.back();            
+            }
+        }, false);
+        
+      $("#yes_btn").click(function() {
+	        navigator.app.exitApp();
+	        return false;
+	    });
+      
+      var upcoming_cache = false;
+      var recent_cache = false;
+      var set = 1;
+      var search_set = 1;
+      var genre = "ALL";
+      var quality = "ALL";
+      
+      
+      $(document).on('pageshow', '[data-role="page"]',function(e,data){  
+          var loader = setInterval(function(){
+              $.mobile.loading('hide');
+              clearInterval(loader);
+          },1); 
+      });  
+        
+      
+      $(document).on('pagebeforeshow', '#upcoming_list', function(){      
+        
+        if(!upcoming_cache)
+        {
+          var loader = setInterval(function(){
+              $.mobile.loading('show', {text: 'Loading...',
+                    textVisible: true,
+                    theme: 'a',
+                    html: ""});
+              clearInterval(loader);
+          },1); 
+          $.ajax({url: "http://yify-torrents.com/api/upcoming.jsonp",
+              dataType: "jsonp",
+              async: true,
+              success: function (result) {
+                  upcoming_ajax.parseJSONP(result);
+              },
+              error: function (request,error) {
+                  alert('Network error has occurred please try again!');
+              }
+          });     
+          upcoming_cache = true;
+        }
+      });
+      
+      
+      var upcoming_ajax = {  
+          parseJSONP:function(result){
+              $.each( result, function(i, row) {
+                  $('#upcoming-data').append('<li><a href="#'+row.ImdbLink+'"><img src="'+row.MovieCover+'" class="ui-li-has-thumb"/><h3>' + row.MovieTitle+ '</h3><p>Date Added: ' + row.DateAdded+ '</p></a></li>');
+              });
+              $('#upcoming-data').listview('refresh');
+          }
+      }
+      
+      $("#filter_btn").click(function() {
+	        $('#all-data').children().remove('li');
+          genre = $("#genre").val();
+          quality = $("#quality").val();
+          recent_cache = false;
+          get_recent_movies();
+	    });
+      
+      $(document).on('pagebeforeshow', '#all_list', function(){      
+        get_recent_movies();
+      });
+      
+      function get_recent_movies()
+      {
+        $("#details_back_btn").attr("href", '#all_list');
+        if(!recent_cache)
+        {
+          var loader = setInterval(function(){
+              $.mobile.loading('show', {text: 'Loading...',
+                    textVisible: true,
+                    theme: 'a',
+                    html: ""});
+              clearInterval(loader);
+          },1); 
+          $.ajax({url: "http://yify-torrents.com/api/list.jsonp?genre="+genre+"&quality="+quality+"&set="+ set,
+              dataType: "jsonp",
+              async: true,
+              success: function (result) {
+                  all_ajax.parseJSONP(result);
+                  set++;
+              },
+              error: function (request,error) {
+                  alert('Network error has occurred please try again!');
+              }
+          });   
+          recent_cache = true;
+        }
+      }
+      
+      var all_ajax = {  
+          parseJSONP:function(result){
+              if(result.MovieCount > 0)
+              {
+                $.each( result.MovieList, function(i, row) {
+                    $('#all-data').append('<li><a href="#movie_desc" movie_id="'+row.MovieID+'" class="mdetails"><img src="'+row.CoverImage+'" class="ui-li-has-thumb"/><h3>' + row.MovieTitle+ '</h3><p>Genre: ' + row.Genre+ '&nbsp;&nbsp;&nbsp;&nbsp;Rating: ' + row.MovieRating+ '</p><p>Date Uploaded: ' + row.DateUploaded+ '</p><p>Quality: ' + row.Quality+ '&nbsp;&nbsp;&nbsp;&nbsp;File Size: ' + row.Size+ '</p><p>Downloads: ' + row.Downloaded+ '&nbsp;&nbsp;&nbsp;&nbsp;Seeders: ' + row.TorrentSeeds+ '</p></a></li>');
+                });
+                $('#all-data').listview('refresh');
+                if(result.MovieCount <= (set*20))
+                {
+                  $("#show_more_btn").parent().hide();
+                }
+                else
+                {
+                  $("#show_more_btn").parent().show();
+                }
+                set++;
+                var loader = setInterval(function(){
+                    $.mobile.loading('hide');
+                    clearInterval(loader);
+                },1); 
+              }
+              else
+              {
+                $("#show_more_btn").parent().hide();
+                $('#all-data').append('<br><center><p><h3>No Results found.</h3></p></center>');
+                var loader = setInterval(function(){
+                    $.mobile.loading('hide');
+                    clearInterval(loader);
+                },1); 
+              }
+              
+          }
+      }
+      
+      $("#show_more_btn").click(function() {
+        recent_cache = false;
+        get_recent_movies();
+      });
+      
+      $("#search_btn").click(function() {
+        $("#details_back_btn").attr("href", '#search_list');
+        $('#result-data').html("");
+        search_set = 1;
+        get_search_results();
+      });
+      
+      $("#show_more_btn2").click(function() {
+        get_search_results();
+      });
+      
+      function get_search_results()
+      {        
+        var loader = setInterval(function(){
+              $.mobile.loading('show', {text: 'Loading...',
+                    textVisible: true,
+                    theme: 'a',
+                    html: ""});
+              clearInterval(loader);
+          },1); 
+        $.ajax({url: "http://yify-torrents.com/api/list.jsonp?set="+ search_set +"&keywords="+ $("#search_data").val(),
+            dataType: "jsonp",
+            async: true,
+            success: function (result) {
+                result_ajax.parseJSONP(result);
+            },
+            error: function (request,error) {
+                alert('Network error has occurred please try again!');
+            }
+        });    
+      }
+      
+      var result_ajax = {  
+          parseJSONP:function(result){
+              
+              if(result.MovieCount > 0)
+              {
+                $.each( result.MovieList, function(i, row) {
+                    $('#result-data').append('<li><a href="#movie_desc" movie_id="'+row.MovieID+'" class="mdetails"><img src="'+row.CoverImage+'" class="ui-li-has-thumb"/><h3>' + row.MovieTitle+ '</h3><p>Genre: ' + row.Genre+ '&nbsp;&nbsp;&nbsp;&nbsp;Rating: ' + row.MovieRating+ '</p><p>Date Uploaded: ' + row.DateUploaded+ '</p><p>Quality: ' + row.Quality+ '&nbsp;&nbsp;&nbsp;&nbsp;File Size: ' + row.Size+ '</p><p>Downloads: ' + row.Downloaded+ '&nbsp;&nbsp;&nbsp;&nbsp;Seeders: ' + row.TorrentSeeds+ '</p></a></li>');
+                });
+                if(search_set*20 >= result.MovieCount)
+                {
+                  $("#show_more_btn2").parent().hide();
+                }
+                else
+                {
+                  $("#show_more_btn2").parent().show();
+                }
+                search_set++;
+              }
+              else
+              {
+                $("#show_more_btn2").parent().hide();
+                $('#result-data').append('<br><center><p><h3>No Results found.</h3></p></center>');
+              }
+              $('#result-data').listview('refresh');
+              var loader = setInterval(function(){
+                  $.mobile.loading('hide');
+                  clearInterval(loader);
+              },1); 
+          }
+      }
+      
+      $('#search_data').keypress(function(event){
+          if(event.keyCode == 13){
+              $("#search_btn").trigger('click');
+          }
+      });
+      
+      $('.mdetails').live("click", function(){ 
+        
+        $('#movie-desc').html("");
+        var loader = setInterval(function(){
+              $.mobile.loading('show', {text: 'Loading...',
+                    textVisible: true,
+                    theme: 'a',
+                    html: ""});
+              clearInterval(loader);
+          },1); 
+        $.ajax({url: "http://yify-torrents.com/api/movie.jsonp?id="+ $(this).attr("movie_id"),
+            dataType: "jsonp",
+            async: true,
+            success: function (result) {
+                details_ajax.parseJSONP(result);
+            },
+            error: function (request,error) {
+                alert('Network error has occurred please try again!');
+            }
+        });    
+      });  
+      
+      var details_ajax = {  
+          parseJSONP:function(result){              
+              
+              $('#movie-desc').html(
+                '<p><img src="'+result.LargeCover+'"/></p>' +
+                '<p><h3>'+result.MovieTitle+'</h3></p>' +
+                '<p><table>' +
+                '<tr><td>Genre:</td><td>'+result.Genre1+', '+result.Genre2+'</td></tr>' +
+                '<tr><td>Size:</td><td>'+result.Size+'</td></tr>' +
+                '<tr><td>Quality:</td><td>'+result.Quality+'</td></tr>' +
+                '<tr><td>Resolution:</td><td>'+result.Resolution+'</td></tr>' +
+                '<tr><td>Frame Rate:</td><td>'+result.FrameRate+' fps</td></tr>' +
+                '<tr><td>Language:</td><td>'+result.Language+'</td></tr>' +
+                '<tr><td>Subtitles:</td><td>'+result.Subtitles+'</td></tr>' +
+                '<tr><td>Run Time:</td><td>'+result.MovieRuntime+' min</td></tr>' +
+                '<tr><td>IMDB Rating:</td><td>'+result.MovieRating+'/10</td></tr>' +
+                '<tr><td>MPR:</td><td>'+result.AgeRating+'</td></tr>' +
+                '<tr><td>&nbsp;</td><td>&nbsp;</td></tr>' +
+                '<tr><td>Peers/Seeds:</td><td>'+result.TorrentPeers+'/'+result.TorrentSeeds+'</td></tr>' +
+                '<tr><td>&nbsp;</td><td>&nbsp;</td></tr>' +
+                '<tr><td>&nbsp;</td><td>&nbsp;</td></tr>' +
+                '<tr><td>Synopsis</td><td>&nbsp;</td></tr>' +
+                '<tr><td colspan=2><p>'+result.LongDescription+'</p></td></tr>' +
+                '<tr><td>&nbsp;</td><td>&nbsp;</td></tr>' +
+                '<tr><td>&nbsp;</td><td>&nbsp;</td></tr>' +
+                '<tr><td>Screenshots</td><td>&nbsp;</td></tr></table>' +
+                '<p></p>' +
+                '<p><img src="'+result.LargeScreenshot1+'" height="'+($(window).width()-70)+'" width="'+$(window).width()+'"/></p>' +
+                '<p><img src="'+result.LargeScreenshot2+'" height="'+($(window).width()-70)+'" width="'+$(window).width()+'"/></p>' +
+                '<p><img src="'+result.LargeScreenshot3+'" height="'+($(window).width()-70)+'" width="'+$(window).width()+'"/></p>' +
+                '<p></p>' +
+                '<p></p>' +
+                '<p></p>' +
+                '<p></p>' +
+                '<p></p>'
+              );
+              
+              $("#torrent_link").attr("href", result.TorrentUrl);
+              
+          }
+      }
+      
+      $(document).on('pagebeforeshow', '#exit_dialog',function(){  
+          var loader = setInterval(function(){
+              $.mobile.loading('hide');
+              clearInterval(loader);
+          },1); 
+      }); 
+      
+    });
+  </script>
+  
+ </head>
+ <body>
+    <div data-role="page" id="home" data-fullscreen="true" data-theme= "a">
+
+      <div data-position="fixed" data-role="header">
+        <h1>YTL</h1>
+      </div><!-- /header -->
+
+      <div data-role="content" id="index">	
+        <br><br><br>
+        <p>
+          
+          <p align="center"><img src="logo.png"/></p>
+          <p><h3>&nbsp;&nbsp;&nbsp;Welcome to the YIFY Torrents Lookup (YTL) Mobile App. 
+          Here you will be able to browse and download all torrents for YIFY rip movies in excellent DVD, 720p, 1080p and 3D quality, all at the smallest file size.</h3></p>
+          
+          <p><a href="#upcoming_list" data-role="button" data-transition="pop" data-dom-cache="true">Upcoming Movies</a></p>
+          <p><a href="#all_list" data-role="button" data-transition="pop">Recent Movies</a></p>
+          <p><a href="#search_page" data-role="button" data-transition="pop">Search Movies</a></p>
+          <p><a href="#about_page" data-role="button" data-transition="pop" data-dom-cache="true">About</a></p>
+          <p><a href="#exit_dialog" data-role="button" id="exit_btn" data-rel="dialog" data-transition="pop">Exit</a></p>
+        </p>		
+      </div><!-- /content -->
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      </div><!-- /footer -->
+    </div><!-- /page -->
+    
+    <div data-role="page" id="upcoming_list" data-fullscreen="true" data-theme= "a">
+      <div data-fullscreen="true" data-position="fixed" data-role="header">
+        
+        <h1>Upcoming Movies</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">
+        <br><br>
+         
+        <p>
+          <ul data-role="listview" id="upcoming-data">
+          </ul>
+        </p>
+        		
+      </div><!-- /content -->
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      <a href="#home" data-icon="arrow-l" data-role="button" data-transition="pop" data-dom-cache="true"><h3>Back</h3></a>
+      </div><!-- /footer -->
+    </div><!-- /page -->
+    
+    <div data-role="page" id="all_list" data-fullscreen="true" data-theme= "a">
+      <div data-fullscreen="true" data-position="fixed" data-role="header">
+        <h1>Recent Movies</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">
+        <br><br>
+         
+        <p>
+          <ul data-role="listview" id="all-data">
+          </ul>
+        </p>
+        <div><a id="show_more_btn" data-role="button"><center><p>Show More</p></center></a><br><br><br></div>
+        		
+      </div><!-- /content -->
+      
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      <a href="#home" data-icon="arrow-l" data-role="button" data-transition="pop" data-dom-cache="true" data-inline="true"><h3>Back</h3></a>
+      <a href="#option_page" data-icon="gear" data-role="button" data-transition="pop" data-dom-cache="true" data-inline="true" class="ui-btn-right"><h3>Options</h3></a>
+      </div><!-- /footer -->
+    </div><!-- /page -->
+    
+    <div data-role="page" id="option_page" data-fullscreen="true" data-theme= "a">
+      <div data-fullscreen="true" data-position="fixed" data-role="header">
+        <h1>Filter Options</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">
+        <br><br><br><br>
+         
+        <p>         
+            <label for="select-choice-0" class="select">Genre:</label>
+            <select name="genre" id="genre">
+              <option value="ALL">All</option>	     
+              <option value="Action">Action</option>	     
+              <option value="Adventure">Adventure</option>
+              <option value="Animation">Animation</option>
+              <option value="Biography">Biography</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Crime">Crime</option>
+              <option value="Documentary">Documentary</option>
+              <option value="Drama">Drama</option>
+              <option value="Family">Family</option>
+              <option value="Fantasy">Fantasy</option>
+              <option value="Film-Noir">Film-Noir</option>
+              <option value="Game-Show">Game-Show</option>
+              <option value="History">History</option>
+              <option value="Horror">Horror</option>
+              <option value="Music">Music</option>
+              <option value="Musical">Musical</option>
+              <option value="Mystery">Mystery</option>
+              <option value="News">News</option>
+              <option value="Reality-TV">Reality-TV</option>
+              <option value="Romance">Romance</option>
+              <option value="Sci-Fi">Sci-Fi</option>
+              <option value="Sport">Sport</option>
+              <option value="Talk-Show">Talk-Show</option>
+              <option value="Thriller">Thriller</option>
+              <option value="War">War</option>
+              <option value="Western">Western</option>
+            </select>
+            <label for="select-choice-0" class="select">Video Quality:</label>
+            <select name="quality" id="quality">
+              <option value="ALL">All</option>	     
+              <option value="720p">720p</option>	     
+              <option value="1080p">1080p</option>
+              <option value="3D">3D</option>
+            </select>
+            <br><br> <a href="#all_list" data-icon="refresh" data-role="button" id="filter_btn">Filter</a>         
+        </p>
+        		
+      </div><!-- /content -->
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      <a href="#all_list" data-icon="arrow-l" data-role="button" data-transition="pop" data-dom-cache="true"><h3>Back</h3></a>
+      </div><!-- /footer -->
+    </div><!-- /page -->
+    
+    
+    <div data-role="page" id="search_page" data-fullscreen="true" data-theme= "a">
+      <div data-fullscreen="true" data-position="fixed" data-role="header">
+        <h1>Search Movies</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">
+        <br><br><br><br>
+         
+        <p>         
+            <input type="text" id="search_data" data-prevent-focus-zoom="false"><br><br> <a href="#search_list" data-role="button" id="search_btn">Search</a>         
+        </p>
+        		
+      </div><!-- /content -->
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      <a href="#home" data-icon="arrow-l" data-role="button" data-transition="pop" data-dom-cache="true"><h3>Back</h3></a>
+      </div><!-- /footer -->
+    </div><!-- /page -->
+    
+    <div data-role="page" id="search_list" data-fullscreen="true" data-theme= "a">
+      <div data-fullscreen="true" data-position="fixed" data-role="header">
+        <h1>Search Result(s)</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">
+        <br><br>
+         
+        <p>
+          <ul data-role="listview" id="result-data">
+          </ul>
+        </p>
+        <div><a id="show_more_btn2" data-role="button"><center><p>Show More</p></center></a><br><br><br></div>
+        		
+      </div><!-- /content -->
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      <a href="#search_page" data-icon="arrow-l" data-role="button" data-transition="pop" data-dom-cache="true"><h3>Back</h3></a>
+      </div><!-- /footer -->
+    </div><!-- /page -->
+    
+    <div data-role="page" id="movie_desc" data-fullscreen="true" data-theme= "a">
+      <div data-fullscreen="true" data-position="fixed" data-role="header">
+        <h1>Movie Description</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">
+        <br><br>
+         
+        <p>
+          <div id="movie-desc" align="center">
+          </div>
+          <center><a href="#" data-ajax="false" id="torrent_link" data-role="button">Download Torrent File</a></center>
+        </p>
+        		
+      </div><!-- /content -->
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      <a href="#" data-icon="arrow-l" id="details_back_btn" data-role="button" data-transition="pop" data-dom-cache="true"><h3>Back</h3></a>
+      </div><!-- /footer -->
+    </div><!-- /page -->
+    
+    
+    <div data-role="page" data-fullscreen="true" data-theme= "a" id = "about_page">
+
+      <div data-position="fixed" data-role="header">
+        <h1>YTL Developer</h1>
+      </div><!-- /header -->
+
+      <div data-role="content" id="index">	
+        <br><br><br>
+        <p>
+          
+          <p align="center"><img src="developer.jpg" height="230px" width="230px"/></p>
+          <p><h3>&nbsp;&nbsp;&nbsp;YIFY Torrent Lookup is a brilliant project created by this annoyingly handsome guy.</h3></p>
+          <br><br>
+          
+        </p>		
+      </div><!-- /content -->
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      <a href="#home" data-icon="arrow-l" data-role="button" data-transition="pop" data-dom-cache="true"><h3>Back</h3></a>
+      </div><!-- /footer -->
+    </div><!-- /page -->
+    
+    <div data-role="page" id="exit_dialog" data-theme= "a">
+      <div data-role="content">
+        <br><br>
+         
+        <p>
+          <center>Are you sure you wanna exit<br>
+          YIFY Torrents Lookup?</center>
+        </p>
+        <center><a id="yes_btn" data-role="button" data-inline="true">Yes</a>
+        <a href="#home" data-role="button" data-inline="true">No</a></center>
+        		
+      </div><!-- /content -->
+
+      
+    </div><!-- /page -->
+    
+    
+ </body>
+</html>
