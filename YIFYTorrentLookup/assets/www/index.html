@@ -82,6 +82,7 @@
           genre = $("#genre").val();
           quality = $("#quality").val();
           recent_cache = false;
+          $('#all-data').html('');
           get_recent_movies();
 	    });
       
@@ -141,7 +142,7 @@
               else
               {
                 $("#show_more_btn").parent().hide();
-                $('#all-data').append('<br><center><p><h3>No Results found.</h3></p></center>');
+                $('#all-data').html('<br><center><p><h3>No Results found.</h3></p></center>');
                 var loader = setInterval(function(){
                     $.mobile.loading('hide');
                     clearInterval(loader);
@@ -193,6 +194,7 @@
               
               if(result.MovieCount > 0)
               {
+                $('#result-data').html('');
                 $.each( result.MovieList, function(i, row) {
                     $('#result-data').append('<li><a href="#movie_desc" movie_id="'+row.MovieID+'" class="mdetails"><img src="'+row.CoverImage+'" class="ui-li-has-thumb"/><h3>' + row.MovieTitle+ '</h3><p>Genre: ' + row.Genre+ '&nbsp;&nbsp;&nbsp;&nbsp;Rating: ' + row.MovieRating+ '</p><p>Date Uploaded: ' + row.DateUploaded+ '</p><p>Quality: ' + row.Quality+ '&nbsp;&nbsp;&nbsp;&nbsp;File Size: ' + row.Size+ '</p><p>Downloads: ' + row.Downloaded+ '&nbsp;&nbsp;&nbsp;&nbsp;Seeders: ' + row.TorrentSeeds+ '</p></a></li>');
                 });
@@ -209,7 +211,7 @@
               else
               {
                 $("#show_more_btn2").parent().hide();
-                $('#result-data').append('<br><center><p><h3>No Results found.</h3></p></center>');
+                $('#result-data').html('<br><center><p><h3>No Results found.</h3></p></center>');
               }
               $('#result-data').listview('refresh');
               var loader = setInterval(function(){
@@ -479,7 +481,7 @@
         <p>
           <div id="movie-desc" align="center">
           </div>
-          <center><a href="#" data-ajax="false" id="torrent_link" data-role="button">Download Torrent File</a></center>
+          <center><a href="#" data-ajax="false" id="torrent_link" data-role="button">Download Torrent File</a><br><br><br></center>
         </p>
         		
       </div><!-- /content -->
