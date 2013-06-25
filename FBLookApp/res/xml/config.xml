@@ -104,5 +104,9 @@
     <!-- Deprecated plugins element. Remove in 3.0 -->
     <plugins>
     	<plugin name="org.apache.cordova.facebook.Connect" value="org.apache.cordova.facebook.ConnectPlugin" />
+    	<plugin name="FacebookConnect">
+   			<param name="APP_ID" value="207404132743584" />
+   			<param name="APP_NAME" value="FBLookApp" />
+ 		</plugin>
     </plugins>
 </widget>
