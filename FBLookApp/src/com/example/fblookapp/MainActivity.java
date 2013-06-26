@@ -11,6 +11,8 @@ public class MainActivity extends DroidGap {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		//setContentView(R.layout.activity_main);
+		super.init();
+		super.clearCache();
 		super.loadUrl("file:///android_asset/www/index.html");
 	}
 

@@ -9,11 +9,45 @@
     
     <!-- cordova facebook plugin -->
 	  <script type="text/javascript" src="cordova.js"></script>
+	  <script>
+      $(function() {
+        $("#fetch_btn").click(function() {
+	        var loader = setInterval(function(){
+              $.mobile.loading('show', {text: 'Fetching friends list...',
+                    textVisible: true,
+                    theme: 'b',
+                    html: ""});
+              clearInterval(loader);
+          },1); 
+          getFriendList();
+	      });
+      
+      });
+    
+    
+    </script>
+    
+    
 	</head>
 	<body>
 	
 	
 	<div data-role="page" id="home" data-fullscreen="true" data-theme= "b">
+      <div data-fullscreen="true" data-position="fixed" data-role="header">
+        <h1>Home</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">
+        <br><br>
+        <p>
+          <p><a href="#friends" data-role="button" data-icon="refresh" id="fetch_btn" data-transition="pop">Fetch Friends</a></p>
+          <p><a href="#about_page" data-role="button" data-transition="pop" data-dom-cache="true">About</a></p>
+        </p>
+        		
+      </div><!-- /content -->
+    </div><!-- /page -->
+    
+    <div data-role="page" id="friends" data-fullscreen="true" data-theme= "b">
       <div data-fullscreen="true" data-position="fixed" data-role="header">
         <h1>My Friends</h1>
       </div><!-- /header -->
@@ -22,13 +56,33 @@
         <br><br>
         <p>
           <ul data-role="listview" id="friends-list"></ul>
-		  <div id="fb-root"></div>
         </p>
         		
       </div><!-- /content -->
     </div><!-- /page -->
+    
+    <div data-role="page" data-fullscreen="true" data-theme= "b" id = "about_page">
+
+      <div data-position="fixed" data-role="header">
+        <h1>FBLookApp - Developer</h1>
+      </div><!-- /header -->
+
+      <div data-role="content" id="index">	
+        <br><br><br>
+        <p>
+          
+          <p align="center"><img src="developer.jpg" height="230px" width="230px"/></p>
+          <p><h3>&nbsp;&nbsp;&nbsp;FBLookApp is a brilliant project created by this annoyingly handsome guy.</h3></p>
+          <br><br>          
+        </p>		
+      </div><!-- /content -->
+
+      <div  data-fullscreen="true" data-position="fixed" data-role="footer">
+      <a href="#home" data-icon="arrow-l" data-role="button" data-transition="pop" data-dom-cache="true"><h3>Back</h3></a>
+      </div><!-- /footer -->
+    </div><!-- /page -->
 	
-	
+    <div id="fb-root"></div>
 	
 	
 	
@@ -54,14 +108,7 @@
 					function(response) {					    
 						if(response.authResponse)
             {
-							var loader = setInterval(function(){
-                  $.mobile.loading('show', {text: 'Fetching friend list...',
-                        textVisible: true,
-                        theme: 'b',
-                        html: ""});
-                  clearInterval(loader);
-              },1); 
-              getFriendList();
+							
 						}
             else
 							console.error("not connected...");
@@ -126,6 +173,8 @@
 					}
           
 			}, false);
+			
+		
 				
 	</script>
 	</body>
