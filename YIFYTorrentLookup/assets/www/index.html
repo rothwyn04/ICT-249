@@ -35,6 +35,7 @@
       
       
       $(document).on('pageshow', '[data-role="page"]',function(e,data){  
+          navigator.splashscreen.hide();
           var loader = setInterval(function(){
               $.mobile.loading('hide');
               clearInterval(loader);
@@ -529,7 +530,5 @@
 
       
     </div><!-- /page -->
-    
-    
  </body>
 </html>

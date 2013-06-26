@@ -12,7 +12,10 @@ public class MainActivity extends DroidGap {
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
-        super.loadUrl("file:///android_asset/www/index.html");
+        super.init();
+		super.clearCache();
+		super.setIntegerProperty("splashscreen", R.drawable.splash);
+		super.loadUrl("file:///android_asset/www/index.html", 10000);
     }
 
 
