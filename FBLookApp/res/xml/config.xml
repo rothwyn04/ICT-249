@@ -36,6 +36,8 @@
     <content src="index.html" />
 
     <preference name="loglevel" value="DEBUG" />
+    <preference name="AutoHideSplashScreen" value="false" />
+	<preference name="auto-hide-splash-screen" value="false" />
     <!--
       <preference name="splashscreen" value="resourceName" />
       <preference name="backgroundColor" value="0xFFF" />
@@ -103,6 +105,7 @@
     </feature>
     <!-- Deprecated plugins element. Remove in 3.0 -->
     <plugins>
+    	<plugin name="SplashScreen" value="org.apache.cordova.SplashScreen"/>
     	<plugin name="org.apache.cordova.facebook.Connect" value="org.apache.cordova.facebook.ConnectPlugin" />
     	<plugin name="FacebookConnect">
    			<param name="APP_ID" value="207404132743584" />

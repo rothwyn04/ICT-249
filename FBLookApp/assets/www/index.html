@@ -40,6 +40,8 @@
       <div data-role="content">
         <br><br>
         <p>
+          <p align="center"><img src="logo.png" height="150px" width="150px"/></p>
+          <p><br><h3>&nbsp;&nbsp;&nbsp;Welcome to the <b>FBLookApp</b>, an application that enables you to see the list of your facebook friends and know who is currently online.<br><br><br></h3></p>
           <p><a href="#friends" data-role="button" data-icon="refresh" id="fetch_btn" data-transition="pop">Fetch Friends</a></p>
           <p><a href="#about_page" data-role="button" data-transition="pop" data-dom-cache="true">About</a></p>
         </p>
@@ -102,8 +104,7 @@
 	  <script src="facebook_js_sdk.js"></script> 
 	  <script>
 	  		 
-	  		
-      function login() {				
+	  function login() {				
 				FB.login(
 					function(response) {					    
 						if(response.authResponse)
