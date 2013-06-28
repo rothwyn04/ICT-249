@@ -132,13 +132,6 @@ document.addEventListener = function(evt, handler, capture) {
         documentEventHandlers[e].subscribe(handler);
     } else {
         m_document_addEventListener.call(document, evt, handler, capture);
-        
-        // added by ken
-        if (e === 'backbutton') {
-            var exec = require('cordova/exec')
-            exec(null, null, "App", "overrideBackbutton", [true]);
-        } // end
-        
     }
 };
 
@@ -242,18 +235,6 @@ var cordova = {
         } else {
             document.dispatchEvent(evt);
         }
-        // added by ken
-        if(type == "backbutton"){
-            var e = document.createEvent('Events');
-            e.initEvent(type);
-            if (data) {
-                for (var i in data) {
-                    e[i] = data[i];
-                }
-            }
-            document.dispatchEvent(e);
-            return;
-        } // end
     },
     fireWindowEvent: function(type, data) {
         var evt = createEvent(type,data);

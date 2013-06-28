@@ -7,7 +7,7 @@
       
       function fetchDetails(entry){
         currentBusinessData = null;
-        $.mobile.showPageLoadingMsg();
+        $.mobile.showPageLoadingMsg("a", "Fetching data...");
         var detailsUrl = "https://maps.googleapis.com/maps/api/place/details/json?reference=" + entry.reference + "&sensor=false&key=" + key;
         $("#name").html("");
         $("#address").html("");
@@ -193,9 +193,10 @@
       }
       
       $(document).ready(function(){
+        
         $("#search_btn").click(function(){
           try {
-            $.mobile.showPageLoadingMsg();
+            $.mobile.showPageLoadingMsg("a", "Fetching data...");
             navigator.geolocation.getCurrentPosition(function(position){
               var radius = $("#range").val() * 1000;
               mapdata = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
